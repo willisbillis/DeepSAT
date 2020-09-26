@@ -43,3 +43,51 @@ source <env_name>/bin/activate
 python evaluate_NB_model.py
 ```
 Be sure to change the `input_data_file` keyword in the config file before you run this if you want to test on a new dataset. This script will also produce a histogram of the distribution of sentiments in the dataset, calculated by multiplying the class (1 for Postive and -1 for Negative) by the confidence of the prediction. Lastly, it will generate a pie chart of the breakdown of all the classes.
+
+## Deep Learning (LSTM) Classifier 
+The Naïve Bayes Classifier works well with small datasets, but the marginal benefit decreases as you increase your dataset size. For large scale classification, it is recommended to use Deep Learning, which scales well with large datasets. This implementation uses Long Short-Term Memory (LSTM) neurons for the deep learning model.
+To run the scripts for the LSTM Classifier, you need a config file. A default one will be generated the first time the training script is run. Edit the values in the config file to configure the parameters for training.
+
+`input_data_file` - The csv file used for training. Must have at least two columns with headers for the reviews and labels.
+
+`review_header` - The header of the column with the training data (i.e. reviews).
+
+`label_header` - The header of the column with the training data labels.
+
+`language` - The language of the training data.
+
+`model_name` - A name for the model.
+
+`vocab_size` - Maximum vocabulary size of the tokenizer.
+
+`oov_tok` - Out of vocabulary token. Used when a word in the testing dataset is not in the vocabulary of the tokenizer.
+
+`max_len` - Maximum length (in characters) of the sentences used for training and testing.
+
+`trunc_type` - Truncating type for the sentences that are longer than the maximum length.
+
+`pad_type` - Padding type for the sentences that are shorter than the longest sentence.
+
+`test_split` - Fraction of how much of the training data to be used for testing. It is recommend to use a number greater than or equal to 0.2.
+
+`embedding_dim` - Number of dimensions used for embedding layer of deep neural network.
+
+`num_epochs` - Maximum number of epochs to train the model.
+
+`verbosity` - Verbosity level of model and output in terminal.
+
+### Training with `train_LSTM_model.py`
+To start training your LSTM model, activate your virtual environment and run the training script.
+```
+source <env_name>/bin/activate
+python train_LSTM_model.py
+```
+This script is fully automated after setting the config file, so no input is required from the command line.
+
+### Evaluating with `evaluate_LSTM_model.py`
+To evaluate your model on a new dataset, activate your virtual environment and run the testing and evaluation script.
+```
+source <env_name>/bin/activate
+python evaluate_NB_model.py
+```
+Be sure to change the `input_data_file` keyword in the config file before you run this if you want to test on a new dataset. This script will also produce a histogram of the distribution of sentiments in the dataset, calculated by multiplying the class (1 for Postive and -1 for Negative) by the confidence of the prediction. Lastly, it will generate a pie chart of the breakdown of all the classes.
