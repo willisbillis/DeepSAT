@@ -19,7 +19,7 @@ from nltk.tag import pos_tag
 from nltk.tag.stanford import StanfordPOSTagger
 from nltk.tokenize import word_tokenize
 
-from config_file import Config
+from config_file_LSTM import Config
 # pylint: disable=no-member
 ################################################################################
 if os.path.exists("eng_config.ini"):
