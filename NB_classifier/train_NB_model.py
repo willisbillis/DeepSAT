@@ -15,7 +15,7 @@ from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from nltk.tag.stanford import StanfordPOSTagger
 
-from config_file import Config
+from config_file_NB import Config
 
 # pylint: disable=no-member
 
