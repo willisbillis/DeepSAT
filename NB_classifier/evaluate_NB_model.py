@@ -6,7 +6,7 @@ import pickle
 import csv
 import os
 
-from config_file import Config
+from config_file_NB import Config
 from train_NB_model import ReviewSet, clear
 
 # pylint: disable=no-member
