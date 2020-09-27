@@ -18,7 +18,7 @@ from nltk.tag.stanford import StanfordPOSTagger
 from config_file_NB import Config
 
 # pylint: disable=no-member
-
+################################################################################
 # function to clear screen after each training sample
 def clear():
     os.system('clear')
@@ -197,8 +197,8 @@ class ReviewSet:
 
 ################################################################################
 if __name__ == "__main__":
-    if os.path.exists("esp_config.ini"):
-        CONFIG_FILE_NAME = "esp_config.ini"
+    if os.path.exists("eng_config.ini"):
+        CONFIG_FILE_NAME = "eng_config.ini"
     else:
         CONFIG_FILE_NAME = None
     CONFIG = Config(CONFIG_FILE_NAME)
