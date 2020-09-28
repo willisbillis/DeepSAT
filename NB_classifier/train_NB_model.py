@@ -1,5 +1,4 @@
 from random import shuffle, choice
-import csv
 import os
 from math import ceil
 import string
@@ -206,12 +205,7 @@ if __name__ == "__main__":
         CONFIG.write_defaults()
     CONFIG.get_values_from_config_file()
 
-    REVIEWS_LIST = []
-    with open(CONFIG.input_data_file, newline='') as csvfile:
-        READER = csv.DictReader(csvfile)
-        for review in READER:
-            REVIEWS_LIST.append((review["ID"], review[CONFIG.header_key]))
-
+    REVIEWS_LIST = pd.read_csv(CONFIG.input_data_file)
 
     TRAINED_SAMPLES = dict([output_class, []] for output_class in CONFIG.class_options)
     KEYBOARD_INPUT = None
@@ -225,13 +219,12 @@ if __name__ == "__main__":
     print("\n")
     print("#"*os.get_terminal_size()[0])
 
-    CSVFILE = pd.read_csv(CONFIG.input_data_file)
-    CSVFILE.to_csv(CONFIG.input_data_file.split('.csv')[0]+"_trained.csv", index=False)
+    REVIEWS_LIST.to_csv(CONFIG.input_data_file.split('.csv')[0]+"_trained.csv", index=False)
 
     while KEYBOARD_INPUT != "Q" and len(REVIEWS_LIST) > 0:
         TRAINING_SAMPLE_IDX = choice(range(len(REVIEWS_LIST)))
-        TRAINING_SAMPLE = REVIEWS_LIST[TRAINING_SAMPLE_IDX][1]
-        TRAINING_SAMPLE_ID = REVIEWS_LIST.pop(TRAINING_SAMPLE_IDX)[0]
+        TRAINING_SAMPLE = REVIEWS_LIST[CONFIG.header_key][TRAINING_SAMPLE_IDX]
+        REVIEWS_LIST.drop(TRAINING_SAMPLE_IDX)
         print("\n")
         print(TRAINING_SAMPLE)
         print("\n")
