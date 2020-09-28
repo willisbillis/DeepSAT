@@ -3,6 +3,7 @@ import matplotlib
 matplotlib.use('agg')
 import matplotlib.pyplot as plt
 import pickle
+import pandas as pd
 import csv
 import os
 
@@ -25,7 +26,7 @@ OUTPUT_HIST = "test_set_hist_"+CONFIG.language[:2]
 OUTPUT_PIE = "test_set_pie_"+CONFIG.language[:2]
 
 TRAINED_CSV = CONFIG.input_data_file.split('.csv')[0]+"_trained.csv"
-PREDICTED_CSV = CONFIG.input_data_file
+PREDICTED_CSV = CONFIG.input_data_file.split('.csv')[0]+"_predicted.csv"
 ################################################################################
 
 # Load model
@@ -33,17 +34,13 @@ with open(CONFIG.model_name+'.pickle', 'rb') as f:
     CLASSIFIER = pickle.load(f)
 
 # Load csv
-REVIEWS_LIST = []
-with open(CONFIG.input_data_file, newline='') as csvfile:
-    READER = csv.DictReader(csvfile)
-    for review in READER:
-        REVIEWS_LIST.append((review["ID"], review[CONFIG.header_key]))
+REVIEWS_LIST = pd.read_csv(CONFIG.input_data_file)
 
 # Create ReviewSet object and clean and gleam data
 CLASS_OPTIONS = ["test"]
 TEST_SAMPLES = dict([output_class, []] for output_class in CLASS_OPTIONS)
-for review in REVIEWS_LIST:
-    review_item = {"ID": review[0], "sentence": review[1], "sample": word_tokenize(review[1])}
+for review in REVIEWS_LIST[CONFIG.header_key]:
+    review_item = {"ID": review.index, "sentence": review, "sample": word_tokenize(review)}
     TEST_SAMPLES["test"].append(review_item)
 
 TS = ReviewSet(TEST_SAMPLES)
