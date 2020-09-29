@@ -87,40 +87,39 @@ if REVIEW_UNSURE == "y":
         # predict outcome of review
         prob_result = CLASSIFIER.prob_classify(test_review["words"]).max()
         confidence = CLASSIFIER.prob_classify(test_review["words"]).prob(prob_result)
-
         trained_class = TRAINED_DATA.loc[TRAINED_DATA[CONFIG.header_key] == test_review["sentence"], "SENTIMENT"]
-        print(trained_class.iloc[0])
+
         if not trained_class.hasnans and trained_class.iloc[0] != prob_result.capitalize():
-            print("MISMATCH")
+            print("Predicted class does not match trained class. Please verify or update class.")
         elif confidence < 0.5:
             print("Predicted class confidence is low. Please verify or update class.")
-            print("To quit, enter 'Q'")
-            print("\n")
-            print(test_review["sentence"])
-            print("class: ", prob_result)
-            print("\n")
-            for idx, option in enumerate(CONFIG.class_options):
-                print(str(idx+1)+". "+option)
-            KEYBOARD_INPUT = input("Choose a class: ")
-            if KEYBOARD_INPUT == "Q":
-                break
+        print("To quit, enter 'Q'")
+        print("\n")
+        print(test_review["sentence"])
+        print("class: ", prob_result)
+        print("\n")
+        for idx, option in enumerate(CONFIG.class_options):
+            print(str(idx+1)+". "+option)
+        KEYBOARD_INPUT = input("Choose a class: ")
+        if KEYBOARD_INPUT == "Q":
+            break
 
-            output_class = CONFIG.class_options[int(KEYBOARD_INPUT)-1]
+        output_class = CONFIG.class_options[int(KEYBOARD_INPUT)-1]
 
-            TRAINED_DATA.loc[TRAINED_DATA[CONFIG.header_key] == test_review["sentence"], "SENTIMENT"] = output_class
-            TRAINED_DATA.to_csv(PREDICTED_CSV, index=False)
+        TRAINED_DATA.loc[TRAINED_DATA[CONFIG.header_key] == test_review["sentence"], "SENTIMENT"] = output_class
+        TRAINED_DATA.to_csv(PREDICTED_CSV, index=False)
 
-            class_result = output_class.lower()
+        class_result = output_class.lower()
 
-            if class_result in ("positive", "positivo"):
-                OVERALL_SENTIMENT.append(1*confidence*100)
-                SENTIMENT_COUNTS[class_result[:3]] += 1
-            if class_result in ("negative", "negativo"):
-                OVERALL_SENTIMENT.append(-1*confidence*100)
-                SENTIMENT_COUNTS[class_result[:3]] += 1
-            if class_result == "neutral":
-                SENTIMENT_COUNTS[class_result[:4]] += 1
-            clear()
+        if class_result in ("positive", "positivo"):
+            OVERALL_SENTIMENT.append(1*confidence*100)
+            SENTIMENT_COUNTS[class_result[:3]] += 1
+        if class_result in ("negative", "negativo"):
+            OVERALL_SENTIMENT.append(-1*confidence*100)
+            SENTIMENT_COUNTS[class_result[:3]] += 1
+        if class_result == "neutral":
+            SENTIMENT_COUNTS[class_result[:4]] += 1
+        clear()
 
 print("Plotting results...")
 # Plot sentiment distribution
