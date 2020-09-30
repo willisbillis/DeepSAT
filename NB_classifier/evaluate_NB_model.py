@@ -39,7 +39,7 @@ REVIEWS_LIST = pd.read_csv(CONFIG.input_data_file)
 CLASS_OPTIONS = ["test"]
 TEST_SAMPLES = dict([output_class, []] for output_class in CLASS_OPTIONS)
 for review in REVIEWS_LIST[CONFIG.header_key]:
-    review_item = {"ID": review.index, "sentence": review, "sample": word_tokenize(review)}
+    review_item = {"sentence": review, "sample": word_tokenize(review)}
     TEST_SAMPLES["test"].append(review_item)
 
 TS = ReviewSet(TEST_SAMPLES)
@@ -83,6 +83,7 @@ if len(HUMAN_REVIEW) > 0:
     REVIEW_UNSURE = input("Yes or No (y/n): ")
 
 if REVIEW_UNSURE == "y":
+    clear()
     for test_review in HUMAN_REVIEW:
         # predict outcome of review
         prob_result = CLASSIFIER.prob_classify(test_review["words"]).max()
