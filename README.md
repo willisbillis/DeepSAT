@@ -2,10 +2,11 @@
 A Sentiment Analysis Tool (SAT) for feedback reviews in csv format using Deep Learning and Naïve Bayes.
 
 ### Installing Requirements
-It is recommended to run DeepSAT in a `venv` environment. After creating your virtual environment called <env_name>, activate the environment, and install the requirements for the model you aim to run. For example, for the Deep Learning (LSTM) model, run:
+It is recommended to run DeepSAT in a `venv` environment. After creating your virtual environment called <env_name>, activate the environment, upgrade to the latest pip, and install the requirements for the model you aim to run. For example, for the Deep Learning (LSTM) model, run:
 ```
 python3 -m venv <env_name>
 source <env_name>/bin/activate
+pip install --upgrade pip
 pip install -r LSTM_requirements.txt
 ```
 
