@@ -212,8 +212,9 @@ elif MODE == "2":
         for test_review in HUMAN_REVIEW:
             # predict outcome of review
             print("Predicted class confidence is low. Please verify or update class. \n")
+            print("To quit, enter 'Q'.")
             print(test_review["sentence"])
-            print("class: ", test_review["prediction"], "\n")
+            print("Predicted class: ", test_review["prediction"], "\n")
             print("1. Positive \n2. Negative")
             KEYBOARD_INPUT = input("Choose a class: ")
             if KEYBOARD_INPUT == "Q":
