@@ -56,7 +56,7 @@ class Config:
         }
 
         config_object["ADVANCED PARAMETERS"] = {
-            "ngrams": 3,
+            "ngrams": 2,
             "test_split": 0.2,
             "verbosity": 1
         }
