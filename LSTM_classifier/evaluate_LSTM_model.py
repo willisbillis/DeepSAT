@@ -215,8 +215,11 @@ elif MODE == "2":
             print(test_review["sentence"])
             print("class: ", test_review["prediction"], "\n")
             print("1. Positive \n2. Negative")
-            KEYBOARD_INPUT = (int(input("Choose a class: ")) - 2) * -1
-            y_class = output_to_class(KEYBOARD_INPUT)
+            KEYBOARD_INPUT = input("Choose a class: ")
+            if KEYBOARD_INPUT == "Q":
+                break
+            KEYBOARD_OUTPUT = (int(KEYBOARD_INPUT) - 2) * -1
+            y_class = output_to_class(KEYBOARD_OUTPUT)
 
             CSVFILE = pd.read_csv(INPUT_DATA_FILE.split('.csv')[0]+"_predicted.csv")
             CSVFILE.loc[CSVFILE[CONFIG.review_header] == test_review["sentence"], "SENTIMENT"] = y_class
