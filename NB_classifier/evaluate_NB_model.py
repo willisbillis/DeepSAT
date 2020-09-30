@@ -97,7 +97,7 @@ if REVIEW_UNSURE == "y":
         print("To quit, enter 'Q'.")
         print("\n")
         print(test_review["sentence"])
-        print("class: ", prob_result)
+        print("Predicted class: ", prob_result)
         print("\n")
         for idx, option in enumerate(CONFIG.class_options):
             print(str(idx+1)+". "+option)
