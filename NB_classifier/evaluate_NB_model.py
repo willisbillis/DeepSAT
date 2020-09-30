@@ -94,7 +94,7 @@ if REVIEW_UNSURE == "y":
             print("Predicted class does not match trained class. Please verify or update class.")
         elif confidence < 0.5:
             print("Predicted class confidence is low. Please verify or update class.")
-        print("To quit, enter 'Q'")
+        print("To quit, enter 'Q'.")
         print("\n")
         print(test_review["sentence"])
         print("class: ", prob_result)

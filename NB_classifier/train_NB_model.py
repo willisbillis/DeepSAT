@@ -157,7 +157,6 @@ class ReviewSet:
             for sample_review in self.__dict__[key]:
                 sample_review_dict = {
                     "words": bag_of_all_words(sample_review["sample"], language, n=n, nlp=nlp),
-                    "ID": sample_review["ID"],
                     "sentence": sample_review["sentence"]
                     }
                 reviews_set.append(sample_review_dict)
@@ -223,8 +222,8 @@ if __name__ == "__main__":
 
     while KEYBOARD_INPUT != "Q" and len(REVIEWS_LIST) > 0:
         TRAINING_SAMPLE_IDX = choice(range(len(REVIEWS_LIST)))
-        TRAINING_SAMPLE = REVIEWS_LIST[CONFIG.header_key][TRAINING_SAMPLE_IDX]
-        REVIEWS_LIST.drop(TRAINING_SAMPLE_IDX)
+        TRAINING_SAMPLE = REVIEWS_LIST.iloc[TRAINING_SAMPLE_IDX][CONFIG.header_key]
+        REVIEWS_LIST = REVIEWS_LIST.drop(REVIEWS_LIST.loc[REVIEWS_LIST[CONFIG.header_key] == TRAINING_SAMPLE].index)
         print("\n")
         print(TRAINING_SAMPLE)
         print("\n")
