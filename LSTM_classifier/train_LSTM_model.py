@@ -22,15 +22,6 @@ from nltk.tokenize import word_tokenize
 from config_file_LSTM import Config
 # pylint: disable=no-member
 ################################################################################
-if os.path.exists("eng_config.ini"):
-    CONFIG_FILE_NAME = "eng_config.ini"
-else:
-    CONFIG_FILE_NAME = None
-CONFIG = Config(CONFIG_FILE_NAME)
-if CONFIG_FILE_NAME is None:
-    CONFIG.write_defaults()
-CONFIG.get_values_from_config_file()
-################################################################################
 def load_data(config_obj):
     csvfile = pd.read_csv(config_obj.input_data_file)
 
@@ -150,18 +141,19 @@ def clean_split_pad_data(sentences, labels, config_obj):
 
 def build_and_compile_model(config_obj):
     model = tf.keras.Sequential([
-        tf.keras.layers.Embedding(config_obj.vocab_size, config_obj.embedding_dim, input_length=config_obj.max_len, trainable=False),
-        tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(256, return_sequences=True)),
-        tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(128)),
-        tf.keras.layers.Dropout(0.4),
-        tf.keras.layers.Flatten(),
-        tf.keras.layers.Dense(24, activation='relu'),
-        tf.keras.layers.Dropout(0.5),
-        tf.keras.layers.Dense(1, activation='sigmoid')
+        tf.keras.layers.Embedding(config_obj.vocab_size, config_obj.embedding_dim, input_length=config_obj.max_len, trainable=False)
     ])
+    for neurons in config_obj.lstm_neurons[:-1]:
+        model.add(tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(neurons, return_sequences=True)))
+    model.add(tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(config_obj.lstm_neurons[-1])))
+    model.add(tf.keras.layers.Dropout(0.4))
+    model.add(tf.keras.layers.Flatten())
+    for neurons, dropout in zip(config_obj.dense_neurons, config_obj.dropout):
+        model.add(tf.keras.layers.Dense(neurons, activation='relu'))
+        model.add(tf.keras.layers.Dropout(dropout))
+    model.add(tf.keras.layers.Dense(1, activation='sigmoid'))
 
-
-    model.compile(loss='binary_crossentropy', optimizer=tf.keras.optimizers.Adam(1e-4), metrics=['accuracy'])
+    model.compile(loss='binary_crossentropy', optimizer=tf.keras.optimizers.Adam(config_obj.learning_rate), metrics=['accuracy'])
     if config_obj.verbosity == 1:
         model.summary()
     return model
@@ -171,6 +163,7 @@ def train_model(model, x_train, y_train, x_test, y_test, config_obj, plotting=Tr
     history = model.fit(x_train, y_train, epochs=config_obj.num_epochs, validation_data=(x_test, y_test), callbacks=[earlystop_callback], verbose=config_obj.verbosity)
 
     scores = model.evaluate(x_test, y_test, verbose=config_obj.verbosity, use_multiprocessing=True)
+    validation_acc = scores[1]*100
     print("{}: {:.2f}%".format(model.metrics_names[1], scores[1]*100))
 
     model.save(config_obj.model_name+".h5")
@@ -197,11 +190,27 @@ def train_model(model, x_train, y_train, x_test, y_test, config_obj, plotting=Tr
         plt.tight_layout()
         plt.savefig("model_history.png")
 
+    return validation_acc
+
+def main(config_obj):
+    SENTENCES, LABELS = load_data(config_obj)
+
+    X_TRAIN, X_TEST, Y_TRAIN, Y_TEST = clean_split_pad_data(SENTENCES, LABELS, config_obj)
+
+    MODEL = build_and_compile_model(config_obj)
+
+    VAL_ACC = train_model(MODEL, X_TRAIN, Y_TRAIN, X_TEST, Y_TEST, config_obj, plotting=True)
+
+    return VAL_ACC
 ################################################################################
-SENTENCES, LABELS = load_data(CONFIG)
+if __name__ == "__main__":
+    if os.path.exists("eng_config.ini"):
+        CONFIG_FILE_NAME = "eng_config.ini"
+    else:
+        CONFIG_FILE_NAME = None
+    CONFIG = Config(CONFIG_FILE_NAME)
+    if CONFIG_FILE_NAME is None:
+        CONFIG.write_defaults()
+    CONFIG.get_values_from_config_file()
 
-X_TRAIN, X_TEST, Y_TRAIN, Y_TEST = clean_split_pad_data(SENTENCES, LABELS, CONFIG)
-
-MODEL = build_and_compile_model(CONFIG)
-
-train_model(MODEL, X_TRAIN, Y_TRAIN, X_TEST, Y_TEST, CONFIG, plotting=True)
+    main(CONFIG)
