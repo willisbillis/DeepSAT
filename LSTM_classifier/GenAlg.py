@@ -1,15 +1,29 @@
 from itertools import product
-from random import sample, shuffle, choice
+from random import sample, shuffle, choice, random
 import numpy as np
+import os
+
+from config_file_LSTM import Config
+from train_LSTM_model import main
 
 PARAMS_DICT = {
     "Embedding_dim": [16, 32, 64],
     "LSTM_layers": [1, 2, 3, 4, 5],
     "LSTM_neurons": [32, 64, 128, 256, 512],
+    "LSTM_architecture": [],
     "dense_layers": [1, 2, 3],
     "dense_neurons": [4, 8, 16, 32, 64],
-    "dropout": [0.1, 0.2, 0.3, 0.4, 0.5]
+    "dropout": [0.1, 0.2, 0.3, 0.4, 0.5],
+    "dense_architecture": [],
+    "learning_rate": [1e-2, 1e-3, 1e-4]
 }
+for i in PARAMS_DICT["LSTM_layers"]:
+    PARAMS_DICT["LSTM_architecture"].extend(list(product(PARAMS_DICT["LSTM_neurons"], repeat=i)))
+for i in PARAMS_DICT["dense_layers"]:
+    PARAMS_DICT["dense_architecture"].extend(list(product(PARAMS_DICT["LSTM_neurons"], PARAMS_DICT["dropout"], repeat=i)))
+
+del PARAMS_DICT["LSTM_layers"], PARAMS_DICT["LSTM_neurons"]
+del PARAMS_DICT["dense_layers"], PARAMS_DICT["dense_neurons"], PARAMS_DICT["dropout"]
 
 ## CONSTANTS
 POP_SIZE = 20
@@ -17,24 +31,25 @@ GENERATIONS = 15
 ELITISM_RATE = 0.1
 MUTATION_RATE = 0.05
 
-def fitness_function(member):
-    value = 0
-    weight = 0
-    if member["Size"] == "small":
-        weight = 1 * member["Counts"]
-    elif member["Size"] == "medium":
-        weight = 2 * member["Counts"]
-    elif member["Size"] == "large":
-        weight = 3 * member["Counts"]
-    if member["Color"] == "red":
-        value = 7 * member["Counts"]
-    elif member["Color"] == "orange":
-        value = 5 * member["Counts"]
-    elif member["Color"] == "yellow":
-        value = 3 * member["Counts"]
-    if weight > 8:
-        value = 0
-    return value
+def fitness_function(member, config_obj):
+    config_obj.embedding_dim = member["Embedding_dim"]
+    config_obj.learning_rate = member["learning_rate"]
+    config_obj.lstm_neurons = member["LSTM_architecture"]
+    config_obj.dense_neurons = []
+    config_obj.dropout = []
+    for idx in range(0, len(member["dense_architecture"]), 2):
+        config_obj.dense_neurons.append(member["dense_architecture"][idx])
+        config_obj.dropout.append(member["dense_architecture"][idx+1])
+    fitness = main(config_obj)
+    return fitness
+
+def reservoir_sample(it, length, k):
+    indices = sample(range(length), k)
+    result = [None]*k
+    for index, datum in enumerate(it):
+        if index in indices:
+            result[indices.index(index)] = datum
+    return result
 
 class Generation:
     """ Generation class for population """
@@ -42,8 +57,15 @@ class Generation:
         self.gen_count = 1
         self.params_dict = params_dict
         self.params = list(params_dict.keys())
-        tot_param_set = list(product(*params_dict.values()))
-        population_params = sample(tot_param_set, pop_size)
+        print("Generating total parameter set...")
+        tot_param_set = product(*params_dict.values())
+        length = 1
+        for value in params_dict.values():
+            length = length * len(value)
+        population_params = reservoir_sample(tot_param_set, length, pop_size)
+        del tot_param_set
+        print("done")
+
         members = []
         for member_id, params in enumerate(population_params):
             new_member = {
@@ -54,10 +76,11 @@ class Generation:
             members.append(new_member)
         self.population = members
 
-    def evaluate_fitness(self, fitness_func):
+    def evaluate_fitness(self, fitness_func, config_obj):
         for child in self.population:
             if "Fitness" not in child.keys():
-                child["Fitness"] = fitness_func(child)
+                print("Evaluating fitness of child {}...".format(child["ID"]))
+                child["Fitness"] = fitness_func(child, config_obj)
         fitness_list = [child["Fitness"] for child in self.population]
         avg_fitness = np.mean(fitness_list)
         peak_fitness = max(fitness_list)
@@ -113,10 +136,20 @@ class Generation:
         self.population = new_generation
         self.gen_count += 1
 
-G1 = Generation(PARAMS_DICT, POP_SIZE)
-print(G1.evaluate_fitness(fitness_function))
+if __name__ == "__main__":
+    if os.path.exists("eng_config.ini"):
+        CONFIG_FILE_NAME = "eng_config.ini"
+    else:
+        CONFIG_FILE_NAME = None
+    CONFIG = Config(CONFIG_FILE_NAME)
+    if CONFIG_FILE_NAME is None:
+        CONFIG.write_defaults()
+    CONFIG.get_values_from_config_file()
 
-while G1.gen_count < GENERATIONS:
-    G1.next_generation(ELITISM_RATE, MUTATION_RATE)
-    print(G1.evaluate_fitness(fitness_function))
-    print(len(G1.population))
+    G1 = Generation(PARAMS_DICT, POP_SIZE)
+    print(G1.evaluate_fitness(fitness_function, CONFIG))
+
+    while G1.gen_count < GENERATIONS:
+        G1.next_generation(ELITISM_RATE, MUTATION_RATE)
+        print(G1.evaluate_fitness(fitness_function, CONFIG))
+        print(len(G1.population))
