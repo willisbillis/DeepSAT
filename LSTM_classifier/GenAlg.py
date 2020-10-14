@@ -1,5 +1,5 @@
 from itertools import product
-from random import sample, shuffle, choice, random
+from random import sample, shuffle, choice
 import numpy as np
 import os
 
@@ -30,6 +30,11 @@ POP_SIZE = 20
 GENERATIONS = 15
 ELITISM_RATE = 0.1
 MUTATION_RATE = 0.05
+OUTPUT = "generation_output.txt"
+
+def write_to_output(filename, message):
+    with open(filename, 'a')  as f:
+        f.write(str(message) + "\n")
 
 def fitness_function(member, config_obj):
     config_obj.embedding_dim = member["Embedding_dim"]
@@ -136,6 +141,13 @@ class Generation:
         self.population = new_generation
         self.gen_count += 1
 
+    def best_fitness(self):
+        generation = sorted(self.population, key=lambda child: child["Fitness"])
+        best_child = generation[-1]
+        for key, value in best_child.items():
+            write_to_output(OUTPUT, key)
+            write_to_output(OUTPUT, value)
+
 if __name__ == "__main__":
     if os.path.exists("eng_config.ini"):
         CONFIG_FILE_NAME = "eng_config.ini"
@@ -147,9 +159,10 @@ if __name__ == "__main__":
     CONFIG.get_values_from_config_file()
 
     G1 = Generation(PARAMS_DICT, POP_SIZE)
-    print(G1.evaluate_fitness(fitness_function, CONFIG))
+    write_to_output(OUTPUT, G1.evaluate_fitness(fitness_function, CONFIG))
 
     while G1.gen_count < GENERATIONS:
         G1.next_generation(ELITISM_RATE, MUTATION_RATE)
-        print(G1.evaluate_fitness(fitness_function, CONFIG))
+        write_to_output(OUTPUT, G1.evaluate_fitness(fitness_function, CONFIG))
         print(len(G1.population))
+    G1.best_fitness()

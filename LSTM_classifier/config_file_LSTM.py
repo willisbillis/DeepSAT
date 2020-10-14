@@ -63,9 +63,9 @@ class Config:
             "pad_type": 'post',
             "test_split": 0.25,
             "embedding_dim": 64,
-            "lstm_neurons": [256, 128],
-            "dense_neurons": [24],
-            "dropout": [0.5],
+            "lstm_neurons": [32, 128, 128, 64, 32],
+            "dense_neurons": [512, 64, 32],
+            "dropout": [0.3, 0.1, 0.2],
             "learning_rate": 1e-4,
             "num_epochs": 500,
             "verbosity": 1
